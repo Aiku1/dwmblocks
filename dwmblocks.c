@@ -30,13 +30,13 @@ void termhandler(int signum);
 static Display *dpy;
 static int screen;
 static Window root;
-static char statusbar[LENGTH(blocks)][50] = {0};
-static char statusstr[256];
+static char statusbar[LENGTH(blocks)][80] = {0};
+static char statusstr[512];
 static char *statuscat;
-static const char *volupcmd[]  = { "volup", NULL };
-static const char *voldowncmd[]  = { "voldown", NULL };
-static const char *volmutecmd[]  = { "volmute", NULL };
-static int statusContinue = 1,volmuted = 0;
+//static const char *volupcmd[]  = { "volup", NULL };
+//static const char *voldowncmd[]  = { "voldown", NULL };
+//static const char *volmutecmd[]  = { "volmute", NULL };
+static int statusContinue = 1; //,volmuted = 0;
 
 void replace(char *str, char old, char new)
 {
@@ -59,8 +59,10 @@ void getcmd(const Block *block, char *output)
 	int i = strlen(block->icon);
 	while((c = fgetc(cmdf)) != EOF)
 		output[i++] = c;
-	if (delim != '\0' && --i)
+    if (delim != '\0' && --i) {
+        output[i] = ' ';
 		output[i++] = delim;
+    }
 	output[i++] = '\0';
 	pclose(cmdf);
 }
