@@ -1,0 +1,33 @@
+#!/bin/sh
+
+#echo -e "$(python ~/.config/python_music.py)"
+
+#get cmus data
+if [ ! -z "$(pgrep -x cmus$)" ]; then
+    output="$(cmus-remote --server 0.0.0.0 --passwd passwd -Q 2> /dev/null | grep -Ei '^((tag) (artist|title))|^duration' | sed -rE 's/((tag) (artist|title)|duration) //' | tr '\n' ';')"
+    cmustimeTot="$(echo "$output" | cut -d';' -f 1)"
+    cmusartist="$(echo "$output" | cut -d';' -f 2)"
+    cmustitle="$(echo "$output" | cut -d';' -f 3 | sed 's/ ([^)]*)//g')"
+    cmustimeTot="$(date -d @$((cmustimeTot)) +%M:%S)"
+
+    #[ ${#cmustitle} -gt 50 ] && cmustitle="$(echo $cmustitle | cut -b 1-50)⋯"
+    #[ ${#cmusartist} -gt 20 ] && cmusartist="$(echo $cmusartist | cut -b 1-20)⋯"
+    out="$cmusartist - $cmustitle"
+    [ "$cmustimeTot" != "00:00" ] || return
+    [ ${#out} -le 70 ] && echo " $out " || echo "$(echo $out | cut -b 1-70)⋯ "
+fi
+
+# get mpd data
+#if [ ! -z "$(pgrep -x mpd)" ]; then
+#    mpdsong="$(mpc status 2> /dev/null | head -1 | sed "s/([^)]*)//g")"
+#    mpdtime="$(mpc status 2> /dev/null | tr '\n' ';' | awk '{ split($0,a,";"); split(a[2], b," "); print b[3] }')"
+#    [ ! -z "$mpdtime" ] && [ ! -z "$mpdsong" ] && echo " ($mpdtime) $mpdsong |"
+#fi
+
+#get spotify data
+#if [ ! -z "$(pgrep -x spotify | head -1)" ]; then
+#    spotifypid=$(pgrep -x spotify | head -1)
+#    spotifytitle="$(eval "wmctrl -l -p | awk '/$spotifypid/' | sed -n 's/.*x230 //p'")"
+#    spotifytitle=$(echo $spotifytitle | sed "s/([^)]*)//g")
+#    [ "$spotifytitle" != "Spotify Premium" ] && [ "$spotifytitle" != "Spotify" ] && echo " $spotifytitle |"
+#fi

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+volstat="$(amixer -D pulse sget Master)"
+
+volume="$(amixer -D pulse sget Master | grep "Right:" | awk -F'[][]' '{ print $2 }' | sed 's/\%//')"
+muted="$(amixer -D pulse sget Master | grep "\[on" )"
+
+# if muted
+[ -z "$muted" ] || [ "$volume" -eq "0" ] && echo " 🔇 0% " && exit
+[ "$volume" -ge  "1" ] && [ "$volume" -lt "33" ] && emoji="🔈"
+[ "$volume" -ge "33" ] && [ "$volume" -lt "66" ] && emoji="🔉"
+[ "$volume" -ge "66" ] && emoji=" 🔊"
+
+echo " ${emoji} ${volume}% "

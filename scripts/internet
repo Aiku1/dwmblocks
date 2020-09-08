@@ -1,0 +1,12 @@
+#!/bin/sh
+
+[ "$(cat /sys/class/net/w*/operstate)" = 'down' ] && wifiicon="📡" ||
+	wifiicon=$(grep "^\s*w" /proc/net/wireless | awk '{ print "📶", int($3 * 100 / 70) "%" }')
+
+status="🌐"
+ping -q -w1 -c1 1.1.1.1 > /dev/null
+[ "$?" != "0" ] && status="❌" # && [ $(( $(date +'%s') % 60 )) = "0" ] && notify-send "System error!" "No connection!" -u critical
+ssid="$(iwgetid | awk -F\" '{print $2}')"
+ipaddrs="$(ip a | grep 'state UP\|UNKNOWN' -A 2 | grep 'inet' | grep -v '127\.0\.0' | cut -d/ -f 1 | sed 's/inet //' | xargs | sed "s/ /, /")"
+
+[ ! -z "$ssid" ] && printf " %s %s %s %s \0" "$status" "$wifiicon" "\"$ssid\"" "$ipaddrs" || printf " %s %s \0" "$status" "$wifiicon"

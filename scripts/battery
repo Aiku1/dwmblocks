@@ -1,0 +1,14 @@
+#!/bin/sh
+
+for battery in /sys/class/power_supply/BAT?
+do
+   capacity=$(cat "$battery"/capacity) || break
+   status=$(sed "s/[Dd]ischarging/🔋/;s/[Nn]ot charging/🛑/;s/[Cc]harging/🔌/;s/[Uu]nknown/♻️/;s/[Ff]ull/⚡/" "$battery"/status)
+   remaining=$(acpi | cut -d, -f 3 | xargs | cut -c 1-5)
+
+   [ "$capacity" -le 30 ] && [ "$status" = "🔋" ] && warn="❗" && notify-send -u critical "System info" "Battery low. Last plugged in: $(cat /var/lib/upower/history-time-full-*.dat | awk '{ split($0, a," "); print a[1] }' | sed 's/^/echo "/; s/\([0-9]\{10\}\)/`date -d @\1`/; s/$/"/' | bash | tail -n1) \n"
+
+   ( [ ! -z "$remaining" ] && printf " %s%s %s%% (%s) \0" "$status" "$warn" "$capacity" "$remaining" ) ||
+        printf " %s%s %s%% \0" "$status" "$warn" "$capacity"
+   unset warn
+done | sed 's/ *$//'

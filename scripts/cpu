@@ -1,0 +1,12 @@
+#!/bin/sh
+
+temps=0
+count=$(ls /sys/class/thermal/thermal_zone*/temp | wc -l)
+
+if [ "$count" -ge "0" ]; then
+    for f in /sys/class/thermal/thermal_zone*/temp; do
+        temps=$(expr $temps + $(cat $f))
+    done
+    avg=$(echo "$temps/$count" | bc -l | head -c 2)
+    printf " %.0f°C \n" "$avg"
+fi
